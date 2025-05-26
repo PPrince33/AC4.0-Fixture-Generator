@@ -11,13 +11,13 @@ st.subheader("St. Augustine Forane Church, Karol Bagh")
 # Select number of teams
 num_teams = st.selectbox("Select the number of teams", [12, 16])
 
-# Upload CSV
-uploaded_file = st.file_uploader("Upload a CSV with team names and church names", type=["csv"])
+# Upload Excel
+uploaded_file = st.file_uploader("Upload an Excel file with team names and church names", type=["xlsx"])
 
 if uploaded_file:
-    df = pd.read_csv(uploaded_file, delimiter=',')
+    df = pd.read_excel(uploaded_file)
     if 'Team' not in df.columns or 'Church' not in df.columns:
-        st.error("CSV must contain 'Team' and 'Church' columns")
+        st.error("Excel file must contain 'Team' and 'Church' columns")
     else:
         team_list = df['Team'].tolist()
         church_list = df['Church'].tolist()
