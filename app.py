@@ -39,30 +39,72 @@ if uploaded_file:
         st.markdown("### Generate Groups")
         if st.button("Generate Groups"):
             num_groups = 4
+            group_keys = ['A', 'B', 'C', 'D']
             group_size = num_teams // num_groups
-
-            groups = {'A': [], 'B': [], 'C': [], 'D': []}
-            church_in_group = {'A': [], 'B': [], 'C': [], 'D': []}
-
+        
+            # Step 1: Group teams by church
+            from collections import defaultdict
+            church_to_teams = defaultdict(list)
+            for team, church in zip(team_list, church_list):
+                church_to_teams[church].append(team)
+        
+            # Step 2: Initialize empty groups
+            groups = {key: [] for key in group_keys}
+            church_in_group = {key: [] for key in group_keys}
+        
+            # Step 3: Place fixed team first
             fixed_team_index = team_list.index(fixed_team)
             fixed_church = church_list[fixed_team_index]
-
+        
             groups[selected_group].append(fixed_team)
             church_in_group[selected_group].append(fixed_church)
-
-            remaining_teams = [(team_list[i], church_list[i]) for i in range(num_teams) if team_list[i] != fixed_team]
-            random.shuffle(remaining_teams)
-
-            for team, church in remaining_teams:
-                for group in groups:
+        
+            # Remove the fixed team from its church group
+            church_to_teams[fixed_church].remove(fixed_team)
+        
+            # Step 4: Assign other teams
+            unassigned = []  # fallback for later
+            for church, teams in church_to_teams.items():
+                random.shuffle(teams)
+                used_groups = set()
+        
+                for team in teams:
+                    # Try to find a group with space that hasn't been used by this church
+                    possible_groups = [
+                        g for g in group_keys
+                        if len(groups[g]) < group_size and church not in church_in_group[g] and g not in used_groups
+                    ]
+                    if possible_groups:
+                        chosen_group = random.choice(possible_groups)
+                        groups[chosen_group].append(team)
+                        church_in_group[chosen_group].append(church)
+                        used_groups.add(chosen_group)
+                    else:
+                        # Save unassigned to assign later
+                        unassigned.append((team, church))
+        
+            # Step 5: Assign leftover teams (from churches with more than 4 teams, etc.)
+            for team, church in unassigned:
+                placed = False
+                for group in group_keys:
                     if len(groups[group]) < group_size and church not in church_in_group[group]:
                         groups[group].append(team)
                         church_in_group[group].append(church)
+                        placed = True
                         break
-
+                if not placed:
+                    for group in group_keys:
+                        if len(groups[group]) < group_size:
+                            groups[group].append(team)
+                            church_in_group[group].append(church)
+                            placed = True
+                            break
+        
+            # Display final groups
             st.markdown("### Groups")
             group_display = {f"Group {group}": teams for group, teams in groups.items()}
             st.dataframe(pd.DataFrame(dict([(k, pd.Series(v)) for k,v in group_display.items()])))
+
 
             # Function to generate match combinations for a group
             def group_matches(group_teams, group_label):
