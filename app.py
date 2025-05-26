@@ -146,9 +146,14 @@ if uploaded_file:
             pdf.chapter_title("Knockout Fixtures")
             for row in knockout_fixtures:
                 pdf.chapter_body([f"{row['Stage']}: {row['Match']}"])
-            pdf.set_font("Arial", '', 12)
+            pdf.set_font("Arial", 'I', 12)
             pdf.cell(0, 10, "St. Augustine Church Parish Priest Signature", ln=True)
-            pdf.image("PicsArt_09-05-09.29.37.png", x=10, y=10, w=30)
+            pdf.cell(0, 10, "_____________________________", ln=True)
+            x_pos = pdf.w - image_width - 10  # 10mm margin from the right
+
+            # Add the image at top-right
+            pdf.image("PicsArt_09-05-09.29.37.png", x=x_pos, y=10, w=image_width)
+           
             pdf_output = "/tmp/fixtures.pdf"
             pdf.output(pdf_output)
 
