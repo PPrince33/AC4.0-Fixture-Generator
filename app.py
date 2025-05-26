@@ -150,7 +150,7 @@ if uploaded_file:
             pdf.cell(0, 10, "St. Augustine Church Parish Priest Signature", ln=True)
             pdf.cell(0, 10, "_____________________________", ln=True)
             x_pos = pdf.w - image_width - 10  # 10mm margin from the right
-
+            image_width = 30
             # Add the image at top-right
             pdf.image("PicsArt_09-05-09.29.37.png", x=x_pos, y=10, w=image_width)
            
