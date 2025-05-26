@@ -2,6 +2,8 @@ import streamlit as st
 import pandas as pd
 import random
 from datetime import datetime, timedelta
+from itertools import combinations
+from fpdf import FPDF
 
 st.subheader("DSYM Karol Bagh")
 st.subheader("Presents")
@@ -56,59 +58,101 @@ if uploaded_file:
             for group in groups:
                 st.write(f"Group {group}: {groups[group]}")
 
-            # Generate fixtures in interleaved order
-            def generate_interleaved_group_fixtures(groups, start_time):
-                from itertools import combinations
-                group_match_queues = {}
-                for group_name, teams in groups.items():
-                    matches = list(combinations(range(len(teams)), 2))
-                    group_match_queues[group_name] = [
-                        (f"{group_name}{i+1} ({teams[i]}) vs {group_name}{j+1} ({teams[j]})")
-                        for i, j in matches
-                    ]
+            # Function to generate match combinations for a group
+            def group_matches(group_teams, group_label):
+                return [
+                    (f"{group_label}{i+1} ({group_teams[i]})", f"{group_label}{j+1} ({group_teams[j]})")
+                    for i, j in combinations(range(len(group_teams)), 2)
+                ]
 
-                schedule = []
-                group_cycle = list(groups.keys())
-                while any(group_match_queues.values()):
-                    for group in group_cycle:
-                        if group_match_queues[group]:
-                            match = group_match_queues[group].pop(0)
-                            schedule.append((start_time.strftime("%H:%M"), match))
-                            start_time += timedelta(minutes=20)
-                return schedule
+            # Group match schedule alternating A/B first, then C/D
+            ab_matches = group_matches(groups['A'], 'A') + group_matches(groups['B'], 'B')
+            cd_matches = group_matches(groups['C'], 'C') + group_matches(groups['D'], 'D')
 
+            # Interleave matches from A/B
+            ab_schedule = []
+            ab_a = group_matches(groups['A'], 'A')
+            ab_b = group_matches(groups['B'], 'B')
+            while ab_a or ab_b:
+                if ab_a:
+                    ab_schedule.append(ab_a.pop(0))
+                if ab_b:
+                    ab_schedule.append(ab_b.pop(0))
+
+            # Interleave matches from C/D
+            cd_schedule = []
+            cd_c = group_matches(groups['C'], 'C')
+            cd_d = group_matches(groups['D'], 'D')
+            while cd_c or cd_d:
+                if cd_c:
+                    cd_schedule.append(cd_c.pop(0))
+                if cd_d:
+                    cd_schedule.append(cd_d.pop(0))
+
+            full_schedule = ab_schedule + cd_schedule
+
+            # Display group fixtures in a table
             st.markdown("### Group Fixtures")
             start_time = datetime.strptime("09:00", "%H:%M")
-            all_schedules = generate_interleaved_group_fixtures(groups, start_time)
+            fixture_table = []
+            for match in full_schedule:
+                match_time = start_time.strftime("%H:%M")
+                fixture_table.append({"Time": match_time, "Match": f"{match[0]} vs {match[1]}"})
+                start_time += timedelta(minutes=20)
 
-            for match_time, match in all_schedules:
-                st.write(f"{match_time} - {match}")
+            fixture_df = pd.DataFrame(fixture_table)
+            st.dataframe(fixture_df)
 
-            # Knockouts
+            # Knockout Fixtures
             st.markdown("### Knockout Fixtures")
-            qf = [
-                ("QF1", "Winner A", "Runner B"),
-                ("QF2", "Winner B", "Runner A"),
-                ("QF3", "Winner C", "Runner D"),
-                ("QF4", "Winner D", "Runner C"),
-            ]
-            sf = [
-                ("SF1", "Winner QF1", "Winner QF3"),
-                ("SF2", "Winner QF2", "Winner QF4"),
-            ]
-            final_matches = [
-                ("LF", "Loser SF1", "Loser SF2"),
-                ("Final", "Winner SF1", "Winner SF2")
+            knockout_fixtures = [
+                {"Stage": "QF1", "Match": "Winner A vs Runner B"},
+                {"Stage": "QF2", "Match": "Winner B vs Runner A"},
+                {"Stage": "QF3", "Match": "Winner C vs Runner D"},
+                {"Stage": "QF4", "Match": "Winner D vs Runner C"},
+                {"Stage": "SF1", "Match": "Winner QF1 vs Winner QF3"},
+                {"Stage": "SF2", "Match": "Winner QF2 vs Winner QF4"},
+                {"Stage": "Loser's Final", "Match": "Loser SF1 vs Loser SF2"},
+                {"Stage": "Final", "Match": "Winner SF1 vs Winner SF2"},
             ]
 
-            st.markdown("#### Quarter Finals")
-            for match in qf:
-                st.write(f"{match[0]}: {match[1]} vs {match[2]}")
+            knockout_df = pd.DataFrame(knockout_fixtures)
+            st.dataframe(knockout_df)
 
-            st.markdown("#### Semi Finals")
-            for match in sf:
-                st.write(f"{match[0]}: {match[1]} vs {match[2]}")
+            # PDF Download Option
+            st.markdown("### Download Fixture as PDF")
+            class PDF(FPDF):
+                def header(self):
+                    self.set_font("Arial", 'B', 12)
+                    self.cell(0, 10, "Augustine Championship 4.0 Fixtures", ln=True, align="C")
 
-            st.markdown("#### Loser's Final and Final")
-            for match in final_matches:
-                st.write(f"{match[0]}: {match[1]} vs {match[2]}")
+                def chapter_title(self, title):
+                    self.set_font("Arial", 'B', 12)
+                    self.cell(0, 10, title, ln=True)
+
+                def chapter_body(self, body):
+                    self.set_font("Arial", '', 12)
+                    for line in body:
+                        self.cell(0, 10, line, ln=True)
+
+            pdf = PDF()
+            pdf.add_page()
+
+            pdf.chapter_title("Group Fixtures")
+            for row in fixture_table:
+                pdf.chapter_body([f"{row['Time']} - {row['Match']}"])
+
+            pdf.chapter_title("Knockout Fixtures")
+            for row in knockout_fixtures:
+                pdf.chapter_body([f"{row['Stage']}: {row['Match']}"])
+
+            pdf_output = "/tmp/fixtures.pdf"
+            pdf.output(pdf_output)
+
+            with open(pdf_output, "rb") as f:
+                st.download_button(
+                    label="Download PDF",
+                    data=f,
+                    file_name="augustine_fixtures.pdf",
+                    mime="application/pdf"
+                )
