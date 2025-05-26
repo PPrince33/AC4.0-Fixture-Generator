@@ -5,11 +5,6 @@ from datetime import datetime, timedelta
 from itertools import combinations
 from fpdf import FPDF
 
-# Helper function to clean text for PDF output
-def safe_text(text):
-    return str(text).encode("latin-1", errors="ignore").decode("latin-1")
-
-# Streamlit UI
 st.subheader("DSYM Karol Bagh")
 st.subheader("Presents")
 st.title("Augustine Championship 4.0")
@@ -125,16 +120,16 @@ if uploaded_file:
             class PDF(FPDF):
                 def header(self):
                     self.set_font("Arial", 'B', 12)
-                    self.cell(0, 10, safe_text("Augustine Championship 4.0 Fixtures"), ln=True, align="C")
+                    self.cell(0, 10, "Augustine Championship 4.0 Fixtures", ln=True, align="C")
 
                 def chapter_title(self, title):
                     self.set_font("Arial", 'B', 12)
-                    self.cell(0, 10, safe_text(title), ln=True)
+                    self.cell(0, 10, title, ln=True)
 
                 def chapter_body(self, body):
                     self.set_font("Arial", '', 12)
                     for line in body:
-                        self.cell(0, 10, safe_text(line), ln=True)
+                        self.cell(0, 10, line, ln=True)
 
             pdf = PDF()
             pdf.add_page()
