@@ -4,6 +4,8 @@ import random
 from datetime import datetime, timedelta
 from itertools import combinations
 from fpdf import FPDF
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
 def safe_text(text):
     return str(text).encode("latin-1", errors="ignore").decode("latin-1")
