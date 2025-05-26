@@ -143,8 +143,7 @@ if uploaded_file:
             
             # Add the image at top-right
             pdf.image("PicsArt_09-05-09.29.37.png", x=x_pos, y=10, w=image_width)
-            now = datetime.now()
-            formatted_date = now.strftime("%d-%m-%Y %H:%M") 
+             
             pdf.chapter_title("Group Allocation")
             for group_name, team_list in groups.items():
                 pdf.set_font("Arial", 'B', 11)
@@ -163,6 +162,11 @@ if uploaded_file:
             pdf.set_font("Arial", 'I', 12)
             pdf.cell(0, 10, "St. Augustine Church Parish Priest Signature", ln=True)
             pdf.cell(0, 10, "_____________________________", ln=True)
+            pdf.set_font("Arial", '', 10)
+            now = datetime.now()
+            formatted_date = now.strftime("%d-%m-%Y %H:%M")
+           
+            pdf.text(o, 10, f"Date: {formatted_date}")
             
             # Add it to the PDF (top-right or anywhere you want)
             pdf.set_font("Arial", '', 10)
