@@ -15,7 +15,7 @@ num_teams = st.selectbox("Select the number of teams", [12, 16])
 uploaded_file = st.file_uploader("Upload a CSV with team names and church names", type=["csv"])
 
 if uploaded_file:
-    df = pd.read_csv(uploaded_file)
+    df = pd.read_csv(uploaded_file, delimiter=';')
     if 'Team' not in df.columns or 'Church' not in df.columns:
         st.error("CSV must contain 'Team' and 'Church' columns")
     else:
