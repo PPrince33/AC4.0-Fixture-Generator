@@ -12,7 +12,7 @@ st.subheader("DSYM Karol Bagh")
 st.subheader("Presents")
 st.title("Augustine Championship 4.0")
 st.subheader("St. Augustine Forane Church, Karol Bagh")
-st.images("PicsArt_09-05-09.29.37.png", width=100)
+st.image("PicsArt_09-05-09.29.37.png", width=100)
 
 # Select number of teams
 num_teams = st.selectbox("Select the number of teams", [12, 16])
