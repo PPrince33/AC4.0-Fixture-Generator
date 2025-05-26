@@ -56,22 +56,30 @@ if uploaded_file:
             for group in groups:
                 st.write(f"Group {group}: {groups[group]}")
 
-            # Generate fixtures
-            def generate_group_fixtures(group_name, teams, start_time):
+            # Generate fixtures in interleaved order
+            def generate_interleaved_group_fixtures(groups, start_time):
+                from itertools import combinations
+                group_match_queues = {}
+                for group_name, teams in groups.items():
+                    matches = list(combinations(range(len(teams)), 2))
+                    group_match_queues[group_name] = [
+                        (f"{group_name}{i+1} ({teams[i]}) vs {group_name}{j+1} ({teams[j]})")
+                        for i, j in matches
+                    ]
+
                 schedule = []
-                time = start_time
-                for i in range(len(teams)):
-                    for j in range(i + 1, len(teams)):
-                        schedule.append((time.strftime("%H:%M"), f"{group_name}{i+1} ({teams[i]}) vs {group_name}{j+1} ({teams[j]})"))
-                        time += timedelta(minutes=20)
-                return schedule, time
+                group_cycle = list(groups.keys())
+                while any(group_match_queues.values()):
+                    for group in group_cycle:
+                        if group_match_queues[group]:
+                            match = group_match_queues[group].pop(0)
+                            schedule.append((start_time.strftime("%H:%M"), match))
+                            start_time += timedelta(minutes=20)
+                return schedule
 
             st.markdown("### Group Fixtures")
             start_time = datetime.strptime("09:00", "%H:%M")
-            all_schedules = []
-            for group in ['A', 'B', 'C', 'D']:
-                schedule, start_time = generate_group_fixtures(group, groups[group], start_time)
-                all_schedules.extend(schedule)
+            all_schedules = generate_interleaved_group_fixtures(groups, start_time)
 
             for match_time, match in all_schedules:
                 st.write(f"{match_time} - {match}")
