@@ -166,14 +166,8 @@ if uploaded_file:
             now = datetime.now()
             formatted_date = now.strftime("%d-%m-%Y %H:%M")
            
-            pdf.text(0, 10, f"Date: {formatted_date}")
+            pdf.cell(0, 10, f"Date: {formatted_date}")
             
-            # Add it to the PDF (top-right or anywhere you want)
-            pdf.set_font("Arial", '', 10)
-            
-            # Top-right corner
-            x_pos = pdf.w - 60  # Adjust based on text length
-            pdf.text(x_pos, 10, f"Date: {formatted_date}")
             pdf_output = "/tmp/fixtures.pdf"
             pdf.output(pdf_output)
 
