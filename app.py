@@ -163,7 +163,7 @@ if uploaded_file:
             pdf.cell(0, 10, "St. Augustine Church Parish Priest Signature", ln=True)
             pdf.cell(0, 10, "_____________________________", ln=True)
             pdf.set_font("Arial", '', 10)
-            now = datetime.now()
+            now = datetime.now(ZoneInfo("Asia/Kolkata"))
             formatted_date = now.strftime("%d-%m-%Y %H:%M")
            
             pdf.cell(0, 10, f"Date: {formatted_date}")
