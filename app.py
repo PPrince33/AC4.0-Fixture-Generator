@@ -166,7 +166,7 @@ if uploaded_file:
             now = datetime.now()
             formatted_date = now.strftime("%d-%m-%Y %H:%M")
            
-            pdf.text(o, 10, f"Date: {formatted_date}")
+            pdf.text(0, 10, f"Date: {formatted_date}")
             
             # Add it to the PDF (top-right or anywhere you want)
             pdf.set_font("Arial", '', 10)
