@@ -55,8 +55,8 @@ if uploaded_file:
                         break
 
             st.markdown("### Groups")
-            for group in groups:
-                st.write(f"Group {group}: {groups[group]}")
+            group_display = {f"Group {group}": teams for group, teams in groups.items()}
+            st.dataframe(pd.DataFrame(dict([(k, pd.Series(v)) for k,v in group_display.items()])))
 
             # Function to generate match combinations for a group
             def group_matches(group_teams, group_label):
@@ -64,10 +64,6 @@ if uploaded_file:
                     (f"{group_label}{i+1} ({group_teams[i]})", f"{group_label}{j+1} ({group_teams[j]})")
                     for i, j in combinations(range(len(group_teams)), 2)
                 ]
-
-            # Group match schedule alternating A/B first, then C/D
-            ab_matches = group_matches(groups['A'], 'A') + group_matches(groups['B'], 'B')
-            cd_matches = group_matches(groups['C'], 'C') + group_matches(groups['D'], 'D')
 
             # Interleave matches from A/B
             ab_schedule = []
