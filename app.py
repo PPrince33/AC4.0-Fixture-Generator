@@ -148,7 +148,7 @@ if uploaded_file:
                 pdf.chapter_body([f"{row['Stage']}: {row['Match']}"])
             pdf.set_font("Arial", '', 12)
             pdf.cell(0, 10, "St. Augustine Church Parish Priest Signature", ln=True)
-            pdf.image("PicsArt_09-05-09.29.37.png", x=None, y=None, w=0, h=0)
+            pdf.image("PicsArt_09-05-09.29.37.png", x=10, y=10, w=30)
             pdf_output = "/tmp/fixtures.pdf"
             pdf.output(pdf_output)
 
