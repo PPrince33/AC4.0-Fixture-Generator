@@ -138,7 +138,14 @@ if uploaded_file:
 
             pdf = PDF()
             pdf.add_page()
-
+            pdf.chapter_title("Group Allocation")
+            for group_name, team_list in groups.items():
+                pdf.set_font("Arial", 'B', 11)
+                pdf.cell(0, 10, f"Group {group_name}:", ln=True)
+                pdf.set_font("Arial", '', 11)
+                for team in team_list:
+                    pdf.cell(0, 10, f" - {safe_text(team)}", ln=True)
+                pdf.ln(5)
             pdf.chapter_title("Group Fixtures")
             for row in fixture_table:
                 pdf.chapter_body([f"{row['Time']} - {row['Match']}"])
@@ -154,7 +161,15 @@ if uploaded_file:
             
             # Add the image at top-right
             pdf.image("PicsArt_09-05-09.29.37.png", x=x_pos, y=10, w=image_width)
-           
+            now = datetime.now()
+            formatted_date = now.strftime("%d-%m-%Y %H:%M")  # e.g., 26-05-2025 14:30
+            
+            # Add it to the PDF (top-right or anywhere you want)
+            pdf.set_font("Arial", '', 10)
+            
+            # Top-right corner
+            x_pos = pdf.w - 60  # Adjust based on text length
+            pdf.text(x_pos, 10, f"Date: {formatted_date}")
             pdf_output = "/tmp/fixtures.pdf"
             pdf.output(pdf_output)
 
